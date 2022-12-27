@@ -1,17 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Persons } from './components/Persons'
 import { PersonForm } from './components/PersonForm'
 import { Filter } from './components/Filter'
+import axios from 'axios'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '038365', id: 1 },
-    { name: 'John Arbuckle', number: '22776', id: 2 }
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newId, setNewId] = useState(persons.length + 1)
   const [newFilter, setNewFilter] = useState('')
+
+  useEffect(() => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('promise fulfilled');
+        setPersons(response.data)
+      })
+  }, [])
+  console.log('render', persons.length, 'persons');
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -50,7 +59,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
+      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} />
       <h2>add new</h2>
       <PersonForm addPerson={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
