@@ -35,21 +35,9 @@ app.use(
   })
 );
 
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
-
-  if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
-  }
-
-  next(error);
-};
-
-app.use(errorHandler);
-
 app.get("/api/persons", (request, response) => {
-  Person.find({}).then((persons) => {
-    response.json(persons);
+  Person.find({}).then((person) => {
+    response.json(person);
   });
 });
 
@@ -80,56 +68,50 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
-  if (!body.name) {
-    return response.status(400).json({
-      error: "name missing",
-    });
-  }
-  if (!body.number) {
-    return response.status(400).json({
-      error: "number missing",
-    });
-  }
-
-  Person.findOne({ name: body.name })
-    .then((person) => {
-      if (person) {
-        return response.status(400).json({
-          error: "name already exists, must be unique",
-        });
-      } else {
-        const person = new Person({
-          name: body.name,
-          number: body.number,
-        });
-
-        person.save().then((savedPerson) => {
-          response.json(savedPerson);
-        });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-});
-
-app.put("/api/persons/:id", (request, reponse) => {
-  const body = request.body;
-
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => next(error));
+});
+
+app.put("/api/persons/:id", (request, reponse, next) => {
+  const { name, number } = request.body;
+
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((updatedPerson) => {
       reponse.json(updatedPerson);
     })
     .catch((error) => next(error));
 });
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+  console.error(error.name);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).send({ error: error.message });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

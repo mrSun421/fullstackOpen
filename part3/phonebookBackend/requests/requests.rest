@@ -1,16 +1,25 @@
 GET http://localhost:8080/api/persons
 
 ###
-DELETE http://localhost:8080/api/persons/63b3453ad850ba503c50a3f7
+DELETE http://localhost:8080/api/persons/63b5f298b52cbb0369198e06
 
 ###
-GET http://localhost:8080/api/persons/63b34570ba82ec3dc6a10138
+GET http://localhost:8080/api/persons/63b5e4a7b66a14a55001a2ef
 
 ###
 POST http://localhost:8080/api/persons
 Content-Type: application/json
 
 {
-    "name": "John Arbuckle",
-    "number": 43646
+    "name": "dfhdh",
+    "number": "12-1567"
+}
+
+###
+PUT http://localhost:8080/api/persons/63b5f298b52cbb0369198e06
+Content-Type: application/json
+
+{
+    "name": "jknron",
+    "number": "12-1567154"
 }
